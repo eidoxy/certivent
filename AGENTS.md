@@ -7,3 +7,8 @@ This version has breaking changes — APIs, conventions, and file structure may 
 This block is written and re-added by `next dev` — verify at `node_modules/next/dist/server/lib/generate-agent-files.js`. Removing it from a diff only re-creates the uncommitted change; committing it with your work keeps the tree clean.
 
 <!-- END:nextjs-agent-rules -->
+
+## References
+Read the guide in `.docs/` to see PRODUCT references and `.agents/` to see AGENT SKILLS references.
+- `.docs/PRD.md`: contains Product Requirements Document. Explain the project, user stories, and the details of each feature
+- `.docs/project/*`: contains technical project overview and details of each feature

@@ -18,18 +18,34 @@ Every feature module assumes these rules. If a module and this file disagree, th
 
 ## 2. Folder structure (authoritative)
 
+Legend: `(exists)` = already in the repo; everything else is created by the modules. Files marked `(tooling)` are not application code — do not modify them unless a task says so.
+
 ```
 certivent/
+  .agents/skills/              # (exists, tooling) agent skills for Codex/other agents
+  .kiro/skills/                # (exists, tooling) same skill set for Kiro
+  .github/workflows/ci.yml     # module 09
+  docs/                        # (exists) PRD.md + features/00–09
   prisma/
     schema.prisma
     seed.ts
     migrations/
+  public/                      # (exists) static assets
   prisma.config.ts
+  AGENTS.md                    # (exists, tooling) Next.js agent rules — managed by `next dev`
+  CLAUDE.md                    # (exists, tooling)
+  skills-lock.json             # (exists, tooling) installed-skills lockfile
+  bun.lock                     # (exists) never hand-edit; changes only via `bun add/remove`
+  package.json                 # (exists) script/trustedDependencies changes per module 09
+  next.config.ts, tsconfig.json, eslint.config.mjs, postcss.config.mjs   # (exists)
+  .env / .env.example          # module 09 (.env is gitignored)
   src/
     generated/prisma/          # Prisma output — gitignored, never edited
     app/
-      layout.tsx               # <Providers>, <SiteHeader>, <Toaster>
-      page.tsx                 # landing (role-aware redirect)
+      globals.css              # (exists) shadcn init rewrites theme tokens here
+      favicon.ico              # (exists)
+      layout.tsx               # (exists) → <Providers>, <SiteHeader>, <Toaster>
+      page.tsx                 # (exists, placeholder) → landing (role-aware redirect)
       (auth)/login/page.tsx
       (auth)/register/page.tsx
       events/page.tsx
@@ -80,10 +96,11 @@ certivent/
       validations/registration.ts
     types/next-auth.d.ts
     proxy.ts
-  docs/
 ```
 
-**Server-only files** (`db.ts`, `auth.ts` except its exported client-safe types, `storage.ts`, `env.ts`, `authz.ts`, `http.ts`) must never be imported from a file that starts with `"use client"`. Client components get data only through `api-client.ts`.
+**Server-only files** (`db.ts`, `auth.ts` except its exported client-safe types, `storage.ts`, `env.ts`, `authz.ts`, `http.ts`, `serializers.ts`) must never be imported from a file that starts with `"use client"`. Client components get data only through `api-client.ts`.
+
+**Agent skills** (`.agents/skills/`, `.kiro/skills/`) are reference material, not instructions that override these docs. Relevant ones per module: `next-best-practices` (all), `prisma-cli` + `prisma-client-api` (01, 04, 06, 07), `shadcn` (all UI), `supabase` (08, 09), `supabase-postgres-best-practices` (01), `web-design-guidelines` + `vercel-react-best-practices` (polish). If a skill contradicts a pinned version or rule here (e.g. Prisma 8, Better Auth, Prisma Postgres, `"use cache"`), follow these docs. The design-style skills (`design-taste-*`, `gpt-taste`, `high-end-visual-design`, `industrial-brutalist-ui`, `minimalist-ui`, `brandkit`, `stitch-design-taste`, `imagegen-*`, `image-to-code`, `redesign-existing-projects`) and `ai-sdk` are out of MVP scope; use them only when a task asks for them.
 
 ## 3. Page pattern
 

@@ -4,8 +4,6 @@
 |---|---|
 | Product | Certivent — event registration with participation certificates |
 | Version | 1.0 (MVP) |
-| Date | 2026-10-04 |
-| Deadline | 2026-10-04 09:00 WIB |
 | Production URL | https://aedoxy.com |
 
 ## 1. Overview
@@ -105,7 +103,7 @@ Admin accounts are created only by the seed script. Public sign-up always create
 | Utilities | date-fns, dotenv | 4.4.0, 18.0.5 |
 | Lint | eslint, eslint-config-next | 9.39.x, 16.3.8 |
 
-## 9. Assumptions
+## 9. Information
 
 1. Status set and transitions as in §6 (not the simpler REGISTERED/ATTENDED/CANCELLED set).
 2. Certificates only for `ATTENDED`; file types PDF/PNG/JPEG, max 4 MB.
