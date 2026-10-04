@@ -1,6 +1,6 @@
 # Certivent
 
-Certivent is an event registration app with participation certificates, built as a time-boxed MVP (about ~7 hours from plan to deploy). Organisers publish events, approve registrations, mark attendance and issue certificates. Participants find events, register, follow their status and download their certificate.
+Certivent is an event registration app with participation certificates, built as a time-boxed MVP (about ~8 hours from 12 AM from plan to deploy). Organisers publish events, approve registrations, mark attendance and issue certificates. Participants find events, register, follow their status and download their certificate.
 
 **Two roles**
 
