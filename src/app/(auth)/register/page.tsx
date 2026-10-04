@@ -1,9 +1,5 @@
-import { RegisterForm } from "@/components/register-form";
+import { AuthPanel } from "@/components/auth-panel";
 
 export default function RegisterPage() {
-  return (
-    <div className="mx-auto w-full max-w-md">
-      <RegisterForm />
-    </div>
-  );
+  return <AuthPanel initialMode="register" callbackUrl="/" />;
 }

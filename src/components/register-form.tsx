@@ -1,17 +1,16 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { signIn } from "next-auth/react";
 import { toast } from "sonner";
 import type { z } from "zod";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { AUTH_FIELD_CLASS, AUTH_INPUT_CLASS, PasswordInput } from "@/components/auth-inputs";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field";
+import { Field, FieldDescription, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Spinner } from "@/components/ui/spinner";
 import { ApiError, apiFetch } from "@/lib/api-client";
@@ -22,6 +21,7 @@ type RegisterFieldName = keyof RegisterFormValues;
 
 const FIELD_NAMES: readonly RegisterFieldName[] = ["name", "email", "password", "confirmPassword"];
 
+// Form only. The card, heading and Login/Sign up toggle live in <AuthPanel>.
 export function RegisterForm() {
   const router = useRouter();
   const [formError, setFormError] = useState<string | null>(null);
@@ -80,96 +80,102 @@ export function RegisterForm() {
   const submitting = form.formState.isSubmitting;
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>
-          <h1 className="text-xl font-semibold tracking-tight">Create your account</h1>
-        </CardTitle>
-        <CardDescription>You need an account to register for events and download certificates.</CardDescription>
-      </CardHeader>
-      <form onSubmit={form.handleSubmit(onSubmit)} noValidate>
-        <CardContent>
-          <FieldGroup>
-            {formError && (
-              <Alert variant="destructive">
-                <AlertDescription>{formError}</AlertDescription>
-              </Alert>
-            )}
-            <Controller
-              name="name"
-              control={form.control}
-              render={({ field, fieldState }) => (
-                <Field data-invalid={fieldState.invalid}>
-                  <FieldLabel htmlFor={field.name}>Name</FieldLabel>
-                  <Input {...field} id={field.name} autoComplete="name" aria-invalid={fieldState.invalid} />
-                  {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
-                </Field>
+    <form onSubmit={form.handleSubmit(onSubmit)} noValidate>
+      <FieldGroup className="gap-4">
+        {formError && (
+          <Alert variant="destructive">
+            <AlertDescription>{formError}</AlertDescription>
+          </Alert>
+        )}
+        <Controller
+          name="name"
+          control={form.control}
+          render={({ field, fieldState }) => (
+            <Field data-invalid={fieldState.invalid} className={AUTH_FIELD_CLASS}>
+              <FieldLabel htmlFor={field.name}>Name</FieldLabel>
+              <Input
+                {...field}
+                id={field.name}
+                suppressHydrationWarning
+                autoComplete="name"
+                className={AUTH_INPUT_CLASS}
+                aria-invalid={fieldState.invalid}
+                aria-describedby={fieldState.invalid ? `${field.name}-error` : undefined}
+              />
+              {fieldState.invalid && <FieldError id={`${field.name}-error`} errors={[fieldState.error]} />}
+            </Field>
+          )}
+        />
+        <Controller
+          name="email"
+          control={form.control}
+          render={({ field, fieldState }) => (
+            <Field data-invalid={fieldState.invalid} className={AUTH_FIELD_CLASS}>
+              <FieldLabel htmlFor={field.name}>Email</FieldLabel>
+              <Input
+                {...field}
+                id={field.name}
+                suppressHydrationWarning
+                type="email"
+                autoComplete="email"
+                className={AUTH_INPUT_CLASS}
+                aria-invalid={fieldState.invalid}
+                aria-describedby={fieldState.invalid ? `${field.name}-error` : undefined}
+              />
+              {fieldState.invalid && <FieldError id={`${field.name}-error`} errors={[fieldState.error]} />}
+            </Field>
+          )}
+        />
+        <Controller
+          name="password"
+          control={form.control}
+          render={({ field, fieldState }) => (
+            <Field data-invalid={fieldState.invalid} className={AUTH_FIELD_CLASS}>
+              <FieldLabel htmlFor={field.name}>Password</FieldLabel>
+              <PasswordInput
+                {...field}
+                id={field.name}
+                suppressHydrationWarning
+                autoComplete="new-password"
+                aria-invalid={fieldState.invalid}
+                aria-describedby={fieldState.invalid ? `${field.name}-error` : `${field.name}-hint`}
+              />
+              {fieldState.invalid ? (
+                <FieldError id={`${field.name}-error`} errors={[fieldState.error]} />
+              ) : (
+                <FieldDescription id={`${field.name}-hint`}>Use at least 8 characters.</FieldDescription>
               )}
-            />
-            <Controller
-              name="email"
-              control={form.control}
-              render={({ field, fieldState }) => (
-                <Field data-invalid={fieldState.invalid}>
-                  <FieldLabel htmlFor={field.name}>Email</FieldLabel>
-                  <Input
-                    {...field}
-                    id={field.name}
-                    type="email"
-                    autoComplete="email"
-                    aria-invalid={fieldState.invalid}
-                  />
-                  {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
-                </Field>
-              )}
-            />
-            <Controller
-              name="password"
-              control={form.control}
-              render={({ field, fieldState }) => (
-                <Field data-invalid={fieldState.invalid}>
-                  <FieldLabel htmlFor={field.name}>Password</FieldLabel>
-                  <Input
-                    {...field}
-                    id={field.name}
-                    type="password"
-                    autoComplete="new-password"
-                    aria-invalid={fieldState.invalid}
-                  />
-                  {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
-                </Field>
-              )}
-            />
-            <Controller
-              name="confirmPassword"
-              control={form.control}
-              render={({ field, fieldState }) => (
-                <Field data-invalid={fieldState.invalid}>
-                  <FieldLabel htmlFor={field.name}>Confirm password</FieldLabel>
-                  <Input
-                    {...field}
-                    id={field.name}
-                    type="password"
-                    autoComplete="new-password"
-                    aria-invalid={fieldState.invalid}
-                  />
-                  {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
-                </Field>
-              )}
-            />
-            <Button type="submit" size="lg" disabled={submitting}>
-              {submitting && <Spinner data-icon="inline-start" />}
-              Sign up
-            </Button>
-          </FieldGroup>
-        </CardContent>
-      </form>
-      <CardFooter className="justify-center gap-1 text-sm text-muted-foreground">
-        Already have an account?
-        <Button variant="link" className="h-auto px-0" nativeButton={false} render={<Link href="/login" />}>
-          Log in
+            </Field>
+          )}
+        />
+        <Controller
+          name="confirmPassword"
+          control={form.control}
+          render={({ field, fieldState }) => (
+            <Field data-invalid={fieldState.invalid} className={AUTH_FIELD_CLASS}>
+              <FieldLabel htmlFor={field.name}>Confirm password</FieldLabel>
+              <PasswordInput
+                {...field}
+                id={field.name}
+                suppressHydrationWarning
+                autoComplete="new-password"
+                aria-invalid={fieldState.invalid}
+                aria-describedby={fieldState.invalid ? `${field.name}-error` : undefined}
+              />
+              {fieldState.invalid && <FieldError id={`${field.name}-error`} errors={[fieldState.error]} />}
+            </Field>
+          )}
+        />
+        <Button
+          type="submit"
+          size="lg"
+          disabled={submitting}
+          className="h-10 w-full rounded-xl text-base font-semibold shadow-sm transition-all hover:-translate-y-px hover:bg-[color-mix(in_oklch,var(--primary),black_12%)] hover:shadow-md motion-reduce:transition-none motion-reduce:hover:translate-y-0"
+        >
+          {submitting && <Spinner data-icon="inline-start" />}
+          Sign up
         </Button>
-      </CardFooter>
-    </Card>
+      </FieldGroup>
+    </form>
   );
 }

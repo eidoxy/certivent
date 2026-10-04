@@ -1,4 +1,4 @@
-import { LoginForm } from "@/components/login-form";
+import { AuthPanel } from "@/components/auth-panel";
 
 /** Accept only same-origin relative paths: must start with "/" and not "//" or "/\". */
 function safeCallbackUrl(raw: string | string[] | undefined): string {
@@ -9,9 +9,5 @@ function safeCallbackUrl(raw: string | string[] | undefined): string {
 
 export default async function LoginPage({ searchParams }: PageProps<"/login">) {
   const { callbackUrl } = await searchParams;
-  return (
-    <div className="mx-auto w-full max-w-md">
-      <LoginForm callbackUrl={safeCallbackUrl(callbackUrl)} />
-    </div>
-  );
+  return <AuthPanel initialMode="login" callbackUrl={safeCallbackUrl(callbackUrl)} />;
 }
