@@ -51,7 +51,7 @@ function isFormField(name: string): name is keyof EventFormValues {
 
 export function EventForm(props: EventFormProps) {
   return (
-    <div className="flex max-w-2xl flex-col gap-6">
+    <div className="flex w-full flex-col gap-6">
       <h1 className="text-3xl font-semibold tracking-tight">
         {props.mode === "create" ? "New event" : "Edit event"}
       </h1>
@@ -111,24 +111,30 @@ function EventFormSkeleton() {
       <p role="status" className="sr-only">
         Loading event
       </p>
-      <div aria-hidden="true" className="flex flex-col gap-5">
-        <FieldSkeleton />
-        <FieldSkeleton inputClassName="h-32" />
-        <FieldSkeleton />
-        <div className="grid gap-5 sm:grid-cols-2">
+      <div aria-hidden="true" className="flex flex-col gap-5 lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(0,24rem)] lg:items-start lg:gap-8">
+        <div className="flex min-w-0 flex-col gap-5 lg:col-start-1 lg:row-start-1">
           <FieldSkeleton />
+          <FieldSkeleton inputClassName="h-32" />
           <FieldSkeleton />
         </div>
-        <FieldSkeleton />
-        <FieldSkeleton />
-        <div className="flex items-center justify-between gap-4">
-          <div className="flex flex-col gap-2">
-            <Skeleton className="h-4 w-20" />
-            <Skeleton className="h-4 w-56" />
+        <div className="flex min-w-0 flex-col gap-5 lg:col-start-1 lg:row-start-2">
+          <FieldSkeleton />
+          <div className="flex items-center justify-between gap-4">
+            <div className="flex flex-col gap-2">
+              <Skeleton className="h-4 w-20" />
+              <Skeleton className="h-4 w-56 max-w-full" />
+            </div>
+            <Skeleton className="h-[18.4px] w-[32px] rounded-full" />
           </div>
-          <Skeleton className="h-[18.4px] w-[32px] rounded-full" />
         </div>
-        <div className="flex gap-2">
+        <div className="flex min-w-0 flex-col gap-5 lg:col-start-2 lg:row-start-1">
+          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-1">
+            <FieldSkeleton />
+            <FieldSkeleton />
+          </div>
+          <FieldSkeleton />
+        </div>
+        <div className="flex gap-2 lg:col-start-2 lg:row-start-2 lg:self-end">
           <Skeleton className="h-9 w-32" />
           <Skeleton className="h-9 w-20" />
         </div>
@@ -183,8 +189,14 @@ function EventFormFields(props: FieldsProps) {
 
   return (
     <form onSubmit={form.handleSubmit((values) => save.mutate(values))} noValidate>
-      <FieldGroup className="gap-8">
-        <FieldSet>
+      {/* Two columns from lg. Left: Details, then Registration (capacity and Published). Right: Schedule,
+          with the action buttons at the bottom. The DOM order is the same as the visual order down the
+          left column and then down the right (Details, Registration, Schedule, buttons), so Tab moves
+          through the form the way it reads, and small screens stack in that same order. minmax(0, ...)
+          tracks and min-w-0 on the fieldsets stop a native <fieldset>'s min-content width from pushing
+          the page wider. */}
+      <FieldGroup className="gap-8 lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(0,24rem)] lg:items-start">
+        <FieldSet className="min-w-0 lg:col-start-1 lg:row-start-1">
           <FieldLegend>Details</FieldLegend>
           <FieldGroup>
             <Controller
@@ -223,10 +235,60 @@ function EventFormFields(props: FieldsProps) {
           </FieldGroup>
         </FieldSet>
 
-        <FieldSet>
+        <FieldSet className="min-w-0 lg:col-start-1 lg:row-start-2">
+          <FieldLegend>Registration</FieldLegend>
+          <FieldGroup>
+            <Controller
+              name="capacity"
+              control={form.control}
+              render={({ field, fieldState }) => (
+                <Field data-invalid={fieldState.invalid}>
+                  <FieldLabel htmlFor={field.name}>Capacity</FieldLabel>
+                  <Input
+                    {...field}
+                    id={field.name}
+                    type="number"
+                    min={1}
+                    inputMode="numeric"
+                    aria-invalid={fieldState.invalid}
+                    aria-describedby={`${field.name}-description`}
+                  />
+                  <FieldDescription id={`${field.name}-description`}>Leave empty for unlimited.</FieldDescription>
+                  {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+                </Field>
+              )}
+            />
+            <Controller
+              name="isPublished"
+              control={form.control}
+              render={({ field, fieldState }) => (
+                <Field orientation="horizontal" data-invalid={fieldState.invalid}>
+                  <div className="flex flex-1 flex-col gap-1">
+                    <FieldLabel htmlFor={field.name}>Published</FieldLabel>
+                    <FieldDescription id={`${field.name}-description`}>
+                      Draft events are hidden from participants.
+                    </FieldDescription>
+                  </div>
+                  <Switch
+                    id={field.name}
+                    name={field.name}
+                    ref={field.ref}
+                    checked={field.value}
+                    onCheckedChange={field.onChange}
+                    onBlur={field.onBlur}
+                    aria-describedby={`${field.name}-description`}
+                    aria-invalid={fieldState.invalid}
+                  />
+                </Field>
+              )}
+            />
+          </FieldGroup>
+        </FieldSet>
+
+        <FieldSet className="min-w-0 lg:col-start-2 lg:row-start-1">
           <FieldLegend>Schedule</FieldLegend>
           <FieldGroup>
-            <div className="grid gap-5 sm:grid-cols-2">
+            <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-1">
               <Controller
                 name="startsAt"
                 control={form.control}
@@ -283,57 +345,7 @@ function EventFormFields(props: FieldsProps) {
           </FieldGroup>
         </FieldSet>
 
-        <FieldSet>
-          <FieldLegend>Registration</FieldLegend>
-          <FieldGroup>
-            <Controller
-              name="capacity"
-              control={form.control}
-              render={({ field, fieldState }) => (
-                <Field data-invalid={fieldState.invalid}>
-                  <FieldLabel htmlFor={field.name}>Capacity</FieldLabel>
-                  <Input
-                    {...field}
-                    id={field.name}
-                    type="number"
-                    min={1}
-                    inputMode="numeric"
-                    aria-invalid={fieldState.invalid}
-                    aria-describedby={`${field.name}-description`}
-                  />
-                  <FieldDescription id={`${field.name}-description`}>Leave empty for unlimited.</FieldDescription>
-                  {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
-                </Field>
-              )}
-            />
-            <Controller
-              name="isPublished"
-              control={form.control}
-              render={({ field, fieldState }) => (
-                <Field orientation="horizontal" data-invalid={fieldState.invalid}>
-                  <div className="flex flex-1 flex-col gap-1">
-                    <FieldLabel htmlFor={field.name}>Published</FieldLabel>
-                    <FieldDescription id={`${field.name}-description`}>
-                      Draft events are hidden from participants.
-                    </FieldDescription>
-                  </div>
-                  <Switch
-                    id={field.name}
-                    name={field.name}
-                    ref={field.ref}
-                    checked={field.value}
-                    onCheckedChange={field.onChange}
-                    onBlur={field.onBlur}
-                    aria-describedby={`${field.name}-description`}
-                    aria-invalid={fieldState.invalid}
-                  />
-                </Field>
-              )}
-            />
-          </FieldGroup>
-        </FieldSet>
-
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center justify-end gap-2 lg:col-start-2 lg:row-start-2 lg:self-end">
           <Button type="submit" size="lg" disabled={pending}>
             {pending && <Spinner data-icon="inline-start" />}
             {props.mode === "create" ? "Create event" : "Save changes"}
