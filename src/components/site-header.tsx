@@ -1,59 +1,45 @@
-import Link from "next/link";
-import { getSessionUser } from "@/lib/authz";
+import { SiteNavbar, type NavLink } from "@/components/site-navbar";
 import { signOut } from "@/lib/auth";
-import { Button } from "@/components/ui/button";
+import { getSessionUser } from "@/lib/authz";
+
+// Only routes that exist (modules 01-08). Participants and certificates have no routes of their own:
+// participants are managed per event and certificates are downloaded from My events.
+const VISITOR_LINKS: readonly NavLink[] = [
+  { href: "/events", label: "Discover" },
+  { href: "/#features", label: "Manage Events" },
+  { href: "/#preview", label: "Attendees" },
+];
+const PARTICIPANT_LINKS: readonly NavLink[] = [
+  { href: "/events", label: "Discover" },
+  { href: "/my-events", label: "My events" },
+];
+const ADMIN_LINKS: readonly NavLink[] = [
+  { href: "/admin", label: "Dashboard", exact: true },
+  { href: "/admin/events", label: "Events" },
+  { href: "/events", label: "Discover" },
+];
 
 export async function SiteHeader() {
   const user = await getSessionUser();
 
+  async function signOutAction() {
+    "use server";
+    await signOut({ redirectTo: "/" });
+  }
+
+  const links = !user ? VISITOR_LINKS : user.role === "ADMIN" ? ADMIN_LINKS : PARTICIPANT_LINKS;
+  const cta = !user
+    ? { href: "/register", label: "Join Now" }
+    : user.role === "ADMIN"
+      ? { href: "/admin/events/new", label: "Create Event" }
+      : null;
+
   return (
-    <header className="border-b">
-      <div className="container mx-auto flex h-14 w-full max-w-5xl items-center justify-between gap-4 px-4">
-        <nav aria-label="Main" className="flex items-center gap-1">
-          <Link href="/" className="mr-3 text-base font-semibold">
-            Certivent
-          </Link>
-          <Button variant="ghost" nativeButton={false} render={<Link href="/events" />}>
-            Events
-          </Button>
-          {user?.role === "PARTICIPANT" && (
-            <Button variant="ghost" nativeButton={false} render={<Link href="/my-events" />}>
-              My events
-            </Button>
-          )}
-          {user?.role === "ADMIN" && (
-            <Button variant="ghost" nativeButton={false} render={<Link href="/admin" />}>
-              Admin
-            </Button>
-          )}
-        </nav>
-        <div className="flex items-center gap-2">
-          {user ? (
-            <>
-              <span className="hidden text-sm text-muted-foreground sm:inline">{user.name}</span>
-              <form
-                action={async () => {
-                  "use server";
-                  await signOut({ redirectTo: "/" });
-                }}
-              >
-                <Button type="submit" variant="ghost">
-                  Log out
-                </Button>
-              </form>
-            </>
-          ) : (
-            <>
-              <Button variant="ghost" nativeButton={false} render={<Link href="/login" />}>
-                Log in
-              </Button>
-              <Button nativeButton={false} render={<Link href="/register" />}>
-                Sign up
-              </Button>
-            </>
-          )}
-        </div>
-      </div>
-    </header>
+    <SiteNavbar
+      links={links}
+      cta={cta}
+      user={user ? { name: user.name, role: user.role } : null}
+      signOutAction={signOutAction}
+    />
   );
 }

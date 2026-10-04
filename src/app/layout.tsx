@@ -29,8 +29,10 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       <body className="min-h-full flex flex-col">
         <Providers>
           <SiteHeader />
-          <main className="container mx-auto w-full max-w-5xl flex-1 px-4 py-8">{children}</main>
-          <Toaster richColors position="top-right" />
+          {/* pt-24 clears the fixed navbar (top-4 + h-14) on every page. */}
+          <main className="container mx-auto w-full max-w-5xl flex-1 px-4 pt-24 pb-8">{children}</main>
+          {/* Toasts start below the floating navbar instead of sliding under it. */}
+          <Toaster richColors position="top-right" offset={{ top: 88, right: 16, bottom: 16, left: 16 }} />
         </Providers>
       </body>
     </html>
